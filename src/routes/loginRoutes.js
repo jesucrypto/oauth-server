@@ -1,15 +1,24 @@
 const express = require('express')
 const router = express.Router()
 const crypto = require('crypto')
+const cors = require('cors')
 const querystring = require('querystring')
 const scopes = require('../common/constants/authorizationScopes.js')
 const spotifyApi = require('../common/constants/spotifyApiEndpoints.js')
 const settingNames = require('../common/constants/settingNames.js')
+const grantTypes = require('../common/constants/grantTypes.js')
 
-router.get('/', (req, res) => {
+let corsOptions = 
+{
+  origin : 'http://localhost:5173',
+  optionSuccessStatus : 200
+}
+
+let redirect_uri = `${req.app.get(settingNames.BASE_URL)}callback`
+
+router.get('/', cors(corsOptions), (req, res) => {
 
     let state = crypto.randomBytes(16).toString('hex');
-    let redirect_uri = `${req.app.get(settingNames.BASE_URL)}callback`
 
     var queryParams = querystring.stringify({
       response_type: 'code',
@@ -19,7 +28,7 @@ router.get('/', (req, res) => {
       state: state
     });
 
-    res.redirect(spotifyApi.authBaseUri + queryParams);
+    res.redirect(spotifyApi.SPOTIFY_AUTH_BASE_URI + queryParams);
 });
 
 router.get('/callback', function(req, res) {
@@ -32,13 +41,14 @@ router.get('/callback', function(req, res) {
         querystring.stringify({
           error: 'state_mismatch'
         }));
-    } else {
+    } 
+    else {
       var authOptions = {
-        url: 'https://accounts.spotify.com/api/token',
+        url: spotifyApi.SPOTIFY_TOKEN_URI,
         form: {
           code: code,
           redirect_uri: redirect_uri,
-          grant_type: 'authorization_code'
+          grant_type: grantTypes.AUTHORIZATION_CODE
         },
         headers: {
           'content-type': 'application/x-www-form-urlencoded',
@@ -46,6 +56,8 @@ router.get('/callback', function(req, res) {
         },
         json: true
       };
+
+      
     }
   });
 

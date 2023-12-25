@@ -3,9 +3,9 @@ module.exports.getSecrets = function()
     let env = process.env
     
     return {
-        dbUser : env.DB_USER,
-        dbPassWord : env.DB_PASSWORD,
-        spotifyApiClientId : env.SPOTIFY_API_CLIENT_ID,
-        spotifyApiSecret : env.SPOTIFY_API_SECRET
+        DB_USER : env.DB_USER,
+        DB_PASSWORD : env.DB_PASSWORD,
+        SPOTIFY_API_CLIENT_ID : env.SPOTIFY_API_CLIENT_ID,
+        SPOTIFY_API_CLIENT_SECRET : env.SPOTIFY_API_SECRET
     }
 }
