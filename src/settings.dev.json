@@ -4,6 +4,6 @@
         "allowed_origin" : "http://localhost:5173"
     },
     "db" : {
-        "connection_string" : ""
+        "host" : "127.0.0.1"
     }
 }

@@ -6,6 +6,6 @@ module.exports.getSecrets = function()
         DB_USER : env.DB_USER,
         DB_PASSWORD : env.DB_PASSWORD,
         SPOTIFY_API_CLIENT_ID : env.SPOTIFY_API_CLIENT_ID,
-        SPOTIFY_API_CLIENT_SECRET : env.SPOTIFY_API_SECRET
+        SPOTIFY_API_CLIENT_SECRET : env.SPOTIFY_API_CLIENT_SECRET
     }
 }
