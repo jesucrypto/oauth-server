@@ -24,7 +24,16 @@ let redirect_uri = `${settings.app.base_url}login/callback`
 
 router.get('/', cors(corsOptions), (req, res) => {
 
+    if (req.session.userName) 
+    {
+      res.json({user : req.session.userName})
+
+      return
+    }
+    
     let state = crypto.randomBytes(16).toString('hex');
+
+    req.session.state = state
 
     var queryParams = querystring.stringify({
       response_type: 'code',
@@ -42,7 +51,7 @@ router.get('/callback', async function(req, res) {
     var code = req.query.code || null;
     var state = req.query.state || null;
   
-    if (state === null/* TODO: validate state */) {
+    if (state === null || req.session.state != state) {
       
       await redirectError(res)
 
@@ -57,9 +66,14 @@ router.get('/callback', async function(req, res) {
 
     let {data: spotifyProfileData} = await spotifyService.getUserProfile(tokenData.access_token)
 
+    req.session.userName = spotifyProfileData.display_name
+
     let { userEntity, tokenEntity } = getUserAndTokenEntities(spotifyProfileData, tokenData)
     
     await userRepository.add(userEntity, tokenEntity)
+
+    res.json({ user : spotifyProfileData.display_name})
+
   });
   
 function getUserAndTokenEntities(spotifyProfileData, tokenData) {
