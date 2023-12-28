@@ -1,0 +1,9 @@
+<div>
+    <form method="post" action="http://localhost:8080/create-mix">
+        {{#each playlists}}
+        <input type="checkbox" id="{{@index}}" name="{{this.name}}" value="{{this.id}}">
+        <label for="{{this.name}}"> {{this.name}}</label><br>
+        {{/each}}
+        <input type="submit" name="create mix">
+    </form>
+</div>

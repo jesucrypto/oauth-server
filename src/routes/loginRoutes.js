@@ -26,7 +26,7 @@ router.get('/', cors(corsOptions), (req, res) => {
 
     if (req.session.userName) 
     {
-      res.json({user : req.session.userName})
+      res.render('profile', { username : req.session.userName})
 
       return
     }
@@ -72,7 +72,7 @@ router.get('/callback', async function(req, res) {
     
     await userRepository.add(userEntity, tokenEntity)
 
-    res.json({ user : spotifyProfileData.display_name})
+    res.render('profile', { username : req.session.userName})
 
   });
   

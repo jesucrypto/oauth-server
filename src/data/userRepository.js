@@ -19,3 +19,18 @@ module.exports.add = async (user, tokens) =>
         console.log(error)
     }
 }
+
+module.exports.getByUsername = async (username) => 
+{
+    const userColumns = schema.tables.user.columns
+
+    try {
+
+        return await dbContext(schema.tables.user.name)
+            .where(userColumns.spotify_display_name, username)
+            .select(userColumns.id)
+
+    } catch (error) {
+        console.log(error)
+    }
+}
