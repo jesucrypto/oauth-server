@@ -1,0 +1,13 @@
+<div>
+    <h1>Mix created succesfully<h1>
+        <h2>{{name}}</h2>
+        <p>{{description}}</p>
+        <img src="{{image_url}}"/>
+        <div>
+            <ul>
+                {{#each tracklist}}
+                <li>{{this.name}}</li>
+                {{/each}}
+            </ul>
+        </div>
+    </div>

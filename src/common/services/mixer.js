@@ -2,9 +2,10 @@ const Playlist = require("./playlist");
 
 class Mixer {
     
-    constructor(playlists) 
+    constructor(playlists, name) 
     {
         this.playlists = playlists
+        this.name = name
     }
 
     getMix()
@@ -22,6 +23,7 @@ class Mixer {
                 if (playlist.getTracklist().length <= 0) continue
 
                 let { track }  = playlist.getTracklist().pop()
+                
                 newTracklist.unshift({
                     parent : playlist.name, 
                     name : track.name,
@@ -31,7 +33,10 @@ class Mixer {
             }
         }
 
-        return newTracklist.reverse()
+        return { 
+            name : this.name, 
+            tracklist : newTracklist.reverse() 
+        }
     }
 }
 

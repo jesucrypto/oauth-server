@@ -13,7 +13,7 @@ app.set(settingNames.DB_PASSWORD, secrets.DB_PASSWORD)
 app.set(settingNames.SPOTIFY_API_CLIENT_ID, secrets.SPOTIFY_API_CLIENT_ID)
 app.set(settingNames.SPOTIFY_API_CLIENT_SECRET, secrets.SPOTIFY_API_CLIENT_SECRET)
 app.set(settingNames.BASE_URL, appSettings.app.base_url)
-app.set(settingNames.BASE_URL, appSettings.app.allowed_originß)
+app.set(settingNames.BASE_URL, appSettings.app.allowed_origin)
 
 const knex = require('./platform/db.js')
 const loginRoutes = require('./routes/loginRoutes.js')

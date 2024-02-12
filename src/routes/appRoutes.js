@@ -30,47 +30,70 @@ router.post('/create-mix', async (req, res) => {
 
     let playlistData = getPlaylistData(req)
 
-    let playlists = await getPlaylistsAsync(playlistData, username)
+    let mixData = await getMixDataAsync(playlistData, username)
 
-    let mix = getMix(playlists)
+    let mix = getMix(mixData)
 
-    uploadToSpotify(mix)
+    let spotifyMixData = await uploadToSpotify(mix, username)
+
+    res.render('mix', spotifyMixData)
 })
 
-async function uploadToSpotify(mix) {
-    spotify.createPlaylistAsync(name)
+async function uploadToSpotify(mix, userName) {
+    let authToken = await useCases.getUserAuthTokenAsync(userName)
 
-    spotify.addTracksToPlaylistAsync(mix)
+    let playlistData = { name : mix.name, description : "descr", public : false}
+
+    let newPlaylist = await spotify.createPlaylistAsync(authToken, userName, playlistData)
+
+    let trackUris = mix.tracklist.map(m => m.uri);
+
+    await spotify.addTracksToPlaylistAsync(authToken, newPlaylist.data.id, trackUris)
+
+    return {
+        name : newPlaylist.data.name,
+        description : newPlaylist.data.description,
+        image_url : "",
+        tracklist : mix.tracklist
+    }
 }
 
-function getMix(playlists) {
-    let mixer = new Mixer(playlists)
-
+function getMix(mixData) {
+    let mixer = new Mixer(mixData.playlists, mixData.name)
     let mix = mixer.getMix()
     return mix
 }
 
-async function getPlaylistsAsync(playlistData, username) {
+async function getMixDataAsync(playlistData, username) {
     let playlistEntities = []
 
-    for (playlist of playlistData) {
+    for (playlist of playlistData.playlists) {
         let playlistEntity = new Playlist(playlist.name, playlist.id)
 
         playlistEntities.push(await playlistEntity.load(username))
     }
-    return playlistEntities
+
+    return { name : playlistData.name, playlists : playlistEntities }
 }
 
 function getPlaylistData(req) {
     let playlists = []
     let ids = req.body
+
     for (let name in ids) {
+        if (name == 'NAME' || ids[name] == 'Submit') {
+            continue;
+        }
+
         playlists.push({ name: name, id: ids[name] })
     }
 
-    playlists = playlists.filter(p => p.id != 'Submit')
+    let playlistData = {
+        name : ids['NAME'],
+        playlists : playlists
+    }
 
-    return playlists
+    return playlistData
 }
 
 module.exports = router

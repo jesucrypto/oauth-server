@@ -3,23 +3,27 @@ module.exports = {
     SPOTIFY_API_BASE_URI : 'https://api.spotify.com',
     SPOTIFY_API_VERSION : 'v1',
 
-    get SPOTIFY_AUTH_BASE_URI() { 
+    get AUTH_BASE_URI() { 
         return `${this.SPOTIFY_ACCOUNTS_BASE_URI}/authorize?` 
     },
 
-    get SPOTIFY_TOKEN_URI() { 
+    get TOKEN_URI() { 
         return `${this.SPOTIFY_ACCOUNTS_BASE_URI}/api/token` 
     },
 
-    get SPOTIFY_PROFILE_ENDPOINT() { 
+    get PROFILE_ENDPOINT() { 
         return `${this.SPOTIFY_API_BASE_URI}/${this.SPOTIFY_API_VERSION}/me` 
     },
 
-    get SPOTIFY_PLAYLISTS_ENDPOINT() {
-        return `${this.SPOTIFY_PROFILE_ENDPOINT}/playlists`
+    get PLAYLISTS_ENDPOINT() {
+        return `${this.PROFILE_ENDPOINT}/playlists`
     },
 
-    get SPOTIFY_PLAYLIST_ITEMS() {
+    get PLAYLIST_TRACKS() {
         return `${this.SPOTIFY_API_BASE_URI}/${this.SPOTIFY_API_VERSION}/playlists/<ID>/tracks`
+    },
+
+    get CREATE_PLAYLIST() {
+        return `${this.SPOTIFY_API_BASE_URI}/${this.SPOTIFY_API_VERSION}/users/<USERID>/playlists`
     }
 }

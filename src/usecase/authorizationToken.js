@@ -13,7 +13,7 @@ module.exports.getUserAuthTokenAsync = async (username) => {
 
     let tokens = await tokenRepository.getByUserIdAsync(userId[0].id)
 
-    if (/* access token is old*/false)
+    if (/* access token is old*/true)
     {
         let {data : tokenData } = await getRefreshTokenAsync(tokens[0].refresh_token)
 
@@ -28,7 +28,7 @@ module.exports.getUserAuthTokenAsync = async (username) => {
 async function getRefreshTokenAsync(refreshToken)
 {
     return await axios.post(
-        spotifyEndpoints.SPOTIFY_TOKEN_URI, {
+        spotifyEndpoints.TOKEN_URI, {
             grant_type : grantTypes.REFRESH_TOKEN,
             refresh_token : refreshToken
         }, {

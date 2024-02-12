@@ -38,12 +38,12 @@ router.get('/', cors(corsOptions), (req, res) => {
     var queryParams = querystring.stringify({
       response_type: 'code',
       client_id: req.app.get(settingNames.SPOTIFY_API_CLIENT_ID),
-      scope: scopes.playlist_read_private,
+      scope: `${scopes.playlist_read_private} ${scopes.playlist_modify_public} ${scopes.playlist_modify_private}`,
       redirect_uri: redirect_uri,
       state: state
     });
 
-    res.redirect(spotifyApi.SPOTIFY_AUTH_BASE_URI + queryParams);
+    res.redirect(spotifyApi.AUTH_BASE_URI + queryParams);
 });
 
 router.get('/callback', async function(req, res) {
@@ -89,7 +89,7 @@ async function requestAccessToken(authorizationCode, clientID, clientSecret)
 {
   return await axios.post
   (
-    spotifyApi.SPOTIFY_TOKEN_URI, 
+    spotifyApi.TOKEN_URI, 
     {
       code: authorizationCode,
       redirect_uri: redirect_uri,

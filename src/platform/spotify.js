@@ -5,29 +5,40 @@ const spotifyApiEndpoints = require('../common/constants/spotifyApiEndpoints.js'
 module.exports.getUserProfile = async function(accessToken) 
 {
     return await httpsService
-        .authorizedGet(spotifyApiEndpoints.SPOTIFY_PROFILE_ENDPOINT, accessToken)
+        .authorizedGet(spotifyApiEndpoints.PROFILE_ENDPOINT, accessToken)
 }
 
 module.exports.getUserPlaylistsAsync = async function(accessToken) 
 {
     return await httpsService
-        .authorizedGet(spotifyApiEndpoints.SPOTIFY_PLAYLISTS_ENDPOINT, accessToken)
+        .authorizedGet(spotifyApiEndpoints.PLAYLISTS_ENDPOINT, accessToken)
 }
 
 module.exports.getPlaylistTracksAsync = async function(playlistId, accessToken) 
 {
     return await httpsService
-        .authorizedGet(spotifyApiEndpoints.SPOTIFY_PLAYLIST_ITEMS.replace('<ID>', playlistId), accessToken)
+        .authorizedGet(spotifyApiEndpoints.PLAYLIST_TRACKS.replace('<ID>', playlistId), accessToken)
 }
 
-module.exports.createPlaylistAsync = async function(accessToken) 
+module.exports.createPlaylistAsync = async function(accessToken, userId, playlistData) 
 {
     return await httpsService
-        .authorizedGet(spotifyApiEndpoints.SPOTIFY_PLAYLIST_ITEMS(playlistId), accessToken)
+        .authorizedPost(
+            spotifyApiEndpoints.CREATE_PLAYLIST.replace('<USERID>', userId), 
+            accessToken,
+            playlistData
+        )
 }
 
-module.exports.addTracksToPlaylistAsync = async function(accessToken) 
+module.exports.addTracksToPlaylistAsync = async function(accessToken, playlistId, trackUris) 
 {
     return await httpsService
-        .authorizedGet(spotifyApiEndpoints.SPOTIFY_PLAYLIST_ITEMS, accessToken)
+        .authorizedPost(
+            spotifyApiEndpoints.PLAYLIST_TRACKS.replace('<ID>', playlistId), 
+            accessToken,
+            {
+                uris : trackUris,
+                position : 0 
+            }
+        )
 }
