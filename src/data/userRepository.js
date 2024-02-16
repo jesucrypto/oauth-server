@@ -2,7 +2,7 @@ const dbContext = require('../platform/db.js')
 const tokenRepository = require('./tokenRepository.js')
 const schema = require('./schema.js')
 
-module.exports.add = async (user, tokens) => 
+module.exports.addAsync = async (user, tokens) => 
 {
     try {
 
@@ -20,7 +20,17 @@ module.exports.add = async (user, tokens) =>
     }
 }
 
-module.exports.getByUsername = async (username) => 
+module.exports.existsAsync = async (username) => {
+    const userColumns = schema.tables.user.columns
+
+    let userLookupResult = await this.getByUsernameAsync(username)
+
+    if (userLookupResult) return true
+
+    return false
+}
+
+module.exports.getByUsernameAsync = async (username) => 
 {
     const userColumns = schema.tables.user.columns
 

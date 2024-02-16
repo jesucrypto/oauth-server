@@ -17,12 +17,23 @@ module.exports.getByUserIdAsync = async (userId) => {
         ])
 }
 
-module.exports.updateAsync = async (tokenId, tokenData) => {
+module.exports.updateAsync = async (tokenId, accessToken) => {
     let columns = schema.tables.tokens.columns
 
     return await dbContext(schema.tables.tokens.name)
         .where(columns.id, tokenId)
         .update({
-            access_token : tokenData.access_token,
+            access_token : accessToken
+        })
+}
+
+module.exports.updateAsync = async (tokenId, accessToken, refresh_token) => {
+    let columns = schema.tables.tokens.columns
+
+    return await dbContext(schema.tables.tokens.name)
+        .where(columns.id, tokenId)
+        .update({
+            access_token : accessToken,
+            refresh_token : refresh_token 
         })
 }

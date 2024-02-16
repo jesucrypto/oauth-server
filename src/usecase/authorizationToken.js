@@ -9,7 +9,7 @@ const axios = require('axios')
 
 module.exports.getUserAuthTokenAsync = async (username) => {
     
-    let userId = await userRepository.getByUsername(username)
+    let userId = await userRepository.getByUsernameAsync(username)
 
     let tokens = await tokenRepository.getByUserIdAsync(userId[0].id)
 
@@ -17,7 +17,7 @@ module.exports.getUserAuthTokenAsync = async (username) => {
     {
         let {data : tokenData } = await getRefreshTokenAsync(tokens[0].refresh_token)
 
-        await tokenRepository.updateAsync(tokens[0].id, tokenData)
+        await tokenRepository.updateAsync(tokens[0].id, tokenData.access_token)
 
         return tokenData.access_token
     }

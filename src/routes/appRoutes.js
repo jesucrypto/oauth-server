@@ -4,10 +4,15 @@ const router = express.Router()
 const spotify = require('../platform/spotify.js')
 const useCases = require('../usecase/authorizationToken.js')
 const Playlist = require('../common/services/playlist.js')
+const settingNames = require('../common/constants/settingNames.js')
 const Mixer = require('../common/services/mixer.js')
 
 router.get('/home', (req, res ) => {
     res.render('home')
+})
+
+router.get('/profile', async (req, res) => {
+    res.render('profile', { username : req.session.userName})
 })
 
 router.get('/select-playlists', async (req, res) => {
@@ -27,6 +32,8 @@ router.post('/create-mix', async (req, res) => {
     
     // TODO: validate cookie exists
     let username = req.session.userName 
+
+    let setting = req.app.get(settingNames.SPOTIFY_API_CLIENT_SECRET);
 
     let playlistData = getPlaylistData(req)
 
