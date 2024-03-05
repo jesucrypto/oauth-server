@@ -9,6 +9,7 @@ const settings = require('../settings.dev.json')
 const querystring = require('querystring')
 const spotifyApi = require('../common/constants/spotifyApiEndpoints.js')
 const spotifyClient = require('../platform/spotify.js')
+const utils = require('../common/services/utils.js')
 
 // TODO: make this a setting.
 let redirect_uri = `${settings.app.base_url}login/callback`
@@ -54,56 +55,63 @@ module.exports.createUser = async function(req, res) {
         return;
     } 
 
-    let {data: tokenData} = await spotifyClient.getAccessTokenAsync
-    (
-        code,
-        req.app.get(settingNames.SPOTIFY_API_CLIENT_ID),
-        req.app.get(settingNames.SPOTIFY_API_CLIENT_SECRET)
-    )
+    let tokenEntity = await getAccessTokenEntityAsync(code, req)
 
-    let {data: spotifyProfileData} = await spotifyClient.getUserProfile(tokenData.access_token)
+    let {data : spotifyProfileData} = await getUserSpotifyProfileAsync(tokenEntity.access_token)
 
-    req.session.userName = spotifyProfileData.display_name
+    setSessionUsername(req, spotifyProfileData.display_name)
 
-    let userlookupResult = (await userRepository.getByUsernameAsync(req.session.userName))[0]
+    let [user] = await userRepository.getByUsernameAsync(req.session.userName)
 
-    if (userlookupResult) {
+    if (user) {
 
-        await updateAccessTokenAsync(userlookupResult.id, tokenData.access_token, tokenData.refresh_token)
+        await updateAccessTokenAsync(user.id, tokenEntity)
 
     } else {
 
-        await createRecordAsync(spotifyProfileData, tokenData)
+        await createRecordAsync(spotifyProfileData, tokenEntity)
     }
 
     res.redirect(`${settings.app.base_url}profile`)
 }
 
-async function createRecordAsync(spotifyProfileData, tokenData) {
+async function getAccessTokenEntityAsync(code, req) {
     
-    let { userEntity, tokenEntity } = getUserAndTokenEntities(spotifyProfileData, tokenData)
-  
+    let { data: tokenData } = await spotifyClient.getAccessTokenAsync(
+        code,
+        req.app.get(settingNames.SPOTIFY_API_CLIENT_ID),
+        req.app.get(settingNames.SPOTIFY_API_CLIENT_SECRET)
+    )
+
+    let tokenEntity = tokenDataConverter.from(tokenData)
+    
+    return tokenEntity
+}
+
+async function getUserSpotifyProfileAsync(accessToken) {
+    return await spotifyClient.getUserProfileAsync(accessToken)
+}
+
+function setSessionUsername(req, username) {
+    req.session.userName = username
+}
+
+async function createRecordAsync(spotifyProfileData, tokenEntity) {
+    
+    let userEntity = spotifyDataConverter.user.from(spotifyProfileData)
+
     await userRepository.addAsync(userEntity, tokenEntity)
 }
 
-async function updateAccessTokenAsync(userId, accessToken, refresh_token) {
+async function updateAccessTokenAsync(userId, tokenEntity) {
 
     let tokens = (await tokenRepository.getByUserIdAsync(userId))[0]
 
-    await tokenRepository.updateAsync(tokens.id, accessToken, refresh_token)
-}
-
-function getUserAndTokenEntities(spotifyProfileData, tokenData) {
-  
-    let userEntity = spotifyDataConverter.user.from(spotifyProfileData)
-  
-    let tokenEntity = tokenDataConverter.from(tokenData)
-  
-    return { userEntity, tokenEntity }
+    await tokenRepository.updateAsync(tokens.id, tokenEntity)
 }
 
 async function redirectError(res)
 {
-  let errorParam = querystring.stringify({ error: 'state_mismatch'})
-  res.redirect('/#' + errorParam);
+    let errorParam = querystring.stringify({ error: 'state_mismatch'})
+    res.redirect('/#' + errorParam);
 }

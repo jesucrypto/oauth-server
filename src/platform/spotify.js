@@ -4,7 +4,7 @@ const spotifyApiEndpoints = require('../common/constants/spotifyApiEndpoints.js'
 const grantTypes = require('../common/constants/grantTypes.js')
 const settings = require('../settings.dev.json')
 
-module.exports.getUserProfile = async function(accessToken) 
+module.exports.getUserProfileAsync = async function(accessToken) 
 {
     return await httpsService
         .authorizedGet(spotifyApiEndpoints.PROFILE_ENDPOINT, accessToken)

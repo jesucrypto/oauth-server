@@ -6,23 +6,34 @@ const utils = require('../common/services/utils.js')
 const querystring = require('querystring')
 const axios = require('axios')
 
-
-module.exports.getUserAuthTokenAsync = async (username) => {
+module.exports.getUserAccessTokenAsync = async (username) => {
     
     let userId = await userRepository.getByUsernameAsync(username)
 
-    let tokens = await tokenRepository.getByUserIdAsync(userId[0].id)
+    let token = (await tokenRepository.getByUserIdAsync(userId[0].id))[0]
 
-    if (/* access token is old*/true)
+    let expirationDate = parseInt(token.expiration_date)
+    
+    let now = Date.now()
+
+    if ( expirationDate < now )
     {
-        let {data : tokenData } = await getRefreshTokenAsync(tokens[0].refresh_token)
+        // TODO: spotify does not send new refresh token?
 
-        await tokenRepository.updateAsync(tokens[0].id, tokenData.access_token)
+        let {data : tokenData } = await getRefreshTokenAsync(token.refresh_token)
+
+        let expirationDate = utils.getExpirationDate(tokenData.expires_in)
+
+        await tokenRepository.updateAsync(
+            token.id, 
+            tokenData.access_token,
+            expirationDate
+        )
 
         return tokenData.access_token
     }
 
-    return tokens[0].access_token
+    return token.access_token
 }
 
 async function getRefreshTokenAsync(refreshToken)

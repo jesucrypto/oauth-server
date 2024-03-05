@@ -1,8 +1,8 @@
 const express = require('express')
 const settings = require('../settings.dev.json')
 const router = express.Router()
-const spotify = require('../platform/spotify.js')
-const useCases = require('../usecase/authorizationToken.js')
+const spotifyClient = require('../platform/spotify.js')
+const useCases = require('../usecase/accessToken.js')
 const Playlist = require('../common/services/playlist.js')
 const settingNames = require('../common/constants/settingNames.js')
 const Mixer = require('../common/services/mixer.js')
@@ -17,15 +17,11 @@ router.get('/profile', async (req, res) => {
 
 router.get('/select-playlists', async (req, res) => {
 
-    let authToken = await useCases.getUserAuthTokenAsync(req.session.userName)
+    let authToken = await useCases.getUserAccessTokenAsync(req.session.userName)
 
-    let { data : playlistData }  = await spotify.getUserPlaylistsAsync(authToken)
+    let { data : playlistData }  = await spotifyClient.getUserPlaylistsAsync(authToken)
 
-    let playlists = {
-        playlists : playlistData.items
-    }
-
-    res.render('playlists', playlists)
+    res.render('playlists', { playlists : playlistData.items })
 })
 
 router.post('/create-mix', async (req, res) => {
@@ -47,15 +43,15 @@ router.post('/create-mix', async (req, res) => {
 })
 
 async function uploadToSpotify(mix, userName) {
-    let authToken = await useCases.getUserAuthTokenAsync(userName)
+    let authToken = await useCases.getUserAccessTokenAsync(userName)
 
     let playlistData = { name : mix.name, description : "descr", public : false}
 
-    let newPlaylist = await spotify.createPlaylistAsync(authToken, userName, playlistData)
+    let newPlaylist = await spotifyClient.createPlaylistAsync(authToken, userName, playlistData)
 
     let trackUris = mix.tracklist.map(m => m.uri);
 
-    await spotify.addTracksToPlaylistAsync(authToken, newPlaylist.data.id, trackUris)
+    await spotifyClient.addTracksToPlaylistAsync(authToken, newPlaylist.data.id, trackUris)
 
     return {
         name : newPlaylist.data.name,

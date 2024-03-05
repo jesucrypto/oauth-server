@@ -16,7 +16,8 @@ module.exports = {
                 id : 'id',
                 user_id : 'user_id',
                 access_token : 'access_token',
-                refresh_token : 'refresh_token'
+                refresh_token : 'refresh_token',
+                expiration_date : 'expiration_date'
             }
         }
     }

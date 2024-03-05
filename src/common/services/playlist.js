@@ -1,5 +1,5 @@
 const spotify = require('../../platform/spotify.js')
-const usecases = require('../../usecase/authorizationToken.js')
+const usecases = require('../../usecase/accessToken.js')
 
 class Playlist {
 
@@ -9,7 +9,7 @@ class Playlist {
     }
 
     async load(username) {
-        let accessToken = await usecases.getUserAuthTokenAsync(username)
+        let accessToken = await usecases.getUserAccessTokenAsync(username)
         let {data: tracks} = await spotify.getPlaylistTracksAsync(this.id, accessToken)
         this.tracks = tracks.items
         this.total = tracks.total
