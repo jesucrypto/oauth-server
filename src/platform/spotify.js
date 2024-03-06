@@ -12,7 +12,7 @@ module.exports.getUserProfileAsync = async function(accessToken)
 
 module.exports.getAccessTokenAsync = async function (authorizationCode, clientID, clientSecret)
 {
-    //TODO: get this from settings
+    // TODO: get this from settings
     let redirect_uri = `${settings.app.base_url}login/callback`
 
     return await axios.post
@@ -25,8 +25,8 @@ module.exports.getAccessTokenAsync = async function (authorizationCode, clientID
         }, 
         {
             headers : {
-                'content-type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + (new Buffer.from(clientID + ':' + clientSecret).toString('base64'))            
+                'content-type' : 'application/x-www-form-urlencoded',
+                'Authorization' : 'Basic ' + (new Buffer.from(clientID + ':' + clientSecret).toString('base64'))            
             }
         }
     )
