@@ -2,14 +2,13 @@ const Playlist = require("./playlist");
 
 class Mixer {
     
-    constructor(playlists, name) 
-    {
+    constructor(playlists, name) {
         this.playlists = playlists
         this.name = name
     }
 
-    getMix()
-    {
+    getMix() {
+        
         let longestPlaylist = this.playlists
             .reduce((acc, playlist) => acc.getTotal() >= playlist.getTotal() ? acc : playlist, 
             this.playlists[0])

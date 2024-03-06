@@ -1,4 +1,4 @@
-const spotify = require('../../platform/spotify.js')
+const spotifyClient = require('../../platform/spotify.js')
 const usecases = require('../../usecase/accessToken.js')
 
 class Playlist {
@@ -8,10 +8,29 @@ class Playlist {
         this.id = id
     }
 
-    async load(username) {
-        let accessToken = await usecases.getUserAccessTokenAsync(username)
-        let {data: tracks} = await spotify.getPlaylistTracksAsync(this.id, accessToken)
+    async loadTracks(accessToken) {
+        
+        this.tracks = []
+
+        let {data: tracks} = await spotifyClient.getPlaylistTracksAsync(this.id, accessToken)
+        
         this.tracks = tracks.items
+        
+        if (tracks.next) {
+            
+            let next = tracks.next
+
+            do { 
+
+                let { data : nextTracks } = await spotifyClient.getPlaylistTracksByUrlAsync(next, accessToken)
+                
+                this.tracks = this.tracks.concat(nextTracks.items)
+
+                next = nextTracks.next
+
+            } while(next)
+        }
+
         this.total = tracks.total
 
         return this

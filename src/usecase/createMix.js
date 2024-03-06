@@ -1,8 +1,9 @@
 const spotifyClient = require('../platform/spotify.js')
 const useCases = require('../usecase/accessToken.js')
+const spotifyApiLimits = require('../common/constants/spotifyApiLimits.js')
 const Playlist = require('../common/services/playlist.js')
-const settingNames = require('../common/constants/settingNames.js')
 const Mixer = require('../common/services/mixer.js')
+const utils = require('../common/services/utils.js')
 
 module.exports.selectPlaylists = async (req, res) => {
 
@@ -18,29 +19,35 @@ module.exports.create = async (req, res) => {
     // TODO: validate cookie exists
     let username = req.session.userName 
 
-    let setting = req.app.get(settingNames.SPOTIFY_API_CLIENT_SECRET);
+    let accessToken = await useCases.getUserAccessTokenAsync(username)
 
     let playlistData = getPlaylistData(req)
 
-    let mixData = await getMixDataAsync(playlistData, username)
+    let mixData = await getMixDataAsync(playlistData, accessToken)
 
     let mix = getMix(mixData)
 
-    let spotifyMixData = await uploadToSpotify(mix, username)
+    let spotifyMixData = await uploadToSpotify(mix, username, accessToken)
 
     res.render('mix', spotifyMixData)
 }
 
-async function uploadToSpotify(mix, userName) {
-    let authToken = await useCases.getUserAccessTokenAsync(userName)
+async function uploadToSpotify(mix, userName, accessToken) {
 
     let playlistData = { name : mix.name, description : "descr", public : false}
 
-    let newPlaylist = await spotifyClient.createPlaylistAsync(authToken, userName, playlistData)
+    let newPlaylist = await spotifyClient.createPlaylistAsync(accessToken, userName, playlistData)
 
     let trackUris = mix.tracklist.map(m => m.uri);
+        
+    let numberOfPages = utils.getNumberOfPages(trackUris.length, spotifyApiLimits.maxTracksInRequest)
 
-    await spotifyClient.addTracksToPlaylistAsync(authToken, newPlaylist.data.id, trackUris)
+    for(let i = 1; i <= numberOfPages; i++) {
+        
+        let page = utils.paginate(trackUris, spotifyApiLimits.maxTracksInRequest, i)
+
+        await spotifyClient.addTracksToPlaylistAsync(accessToken, newPlaylist.data.id, page)
+    }
 
     return {
         name : newPlaylist.data.name,
@@ -51,18 +58,20 @@ async function uploadToSpotify(mix, userName) {
 }
 
 function getMix(mixData) {
+
     let mixer = new Mixer(mixData.playlists, mixData.name)
     let mix = mixer.getMix()
     return mix
 }
 
-async function getMixDataAsync(playlistData, username) {
+async function getMixDataAsync(playlistData, accessToken) {
     let playlistEntities = []
 
     for (playlist of playlistData.playlists) {
+        
         let playlistEntity = new Playlist(playlist.name, playlist.id)
 
-        playlistEntities.push(await playlistEntity.load(username))
+        playlistEntities.push(await playlistEntity.loadTracks(accessToken))
     }
 
     return { name : playlistData.name, playlists : playlistEntities }

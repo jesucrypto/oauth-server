@@ -44,6 +44,12 @@ module.exports.getPlaylistTracksAsync = async function(playlistId, accessToken)
         .authorizedGet(spotifyApiEndpoints.PLAYLIST_TRACKS.replace('<ID>', playlistId), accessToken)
 }
 
+module.exports.getPlaylistTracksByUrlAsync = async function(url, accessToken) 
+{
+    return await httpsService
+        .authorizedGet(url, accessToken)
+}
+
 module.exports.createPlaylistAsync = async function(accessToken, userId, playlistData) 
 {
     return await httpsService
