@@ -59,7 +59,7 @@ module.exports.createUser = async function(req, res) {
 
     let {data : spotifyProfileData} = await getUserSpotifyProfileAsync(tokenEntity.access_token)
 
-    setSessionUsername(req, spotifyProfileData.display_name)
+    setSessionUsername(req, spotifyProfileData.id, spotifyProfileData.display_name)
 
     let [user] = await userRepository.getByUsernameAsync(req.session.userName)
 
@@ -92,8 +92,9 @@ async function getUserSpotifyProfileAsync(accessToken) {
     return await spotifyClient.getUserProfileAsync(accessToken)
 }
 
-function setSessionUsername(req, username) {
-    req.session.userName = username
+function setSessionUsername(req, userId, displayName) {
+    req.session.userId = userId
+    req.session.userName = displayName
 }
 
 async function createRecordAsync(spotifyProfileData, tokenEntity) {

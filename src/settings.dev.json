@@ -1,7 +1,7 @@
 {
     "app" : {
-        "base_url" : "http://localhost:8080/",
-        "allowed_origin" : "http://localhost:5173"
+        "base_url" : "https://localhost:8080/",
+        "allowed_origin" : "https://localhost:5173"
     },
     "db" : {
         "host" : "127.0.0.1"

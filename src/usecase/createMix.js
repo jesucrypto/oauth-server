@@ -9,15 +9,16 @@ module.exports.selectPlaylists = async (req, res) => {
 
     let authToken = await useCases.getUserAccessTokenAsync(req.session.userName)
 
-    let { data : playlistData }  = await spotifyClient.getUserPlaylistsAsync(authToken)
+    let playlists = await spotifyClient.getAllUserPlaylistsAsync(authToken)
 
-    res.render('playlists', { playlists : playlistData.items })
+    res.render('playlists', { playlists : playlists })
 }
 
 module.exports.create = async (req, res) => {
     
     // TODO: validate cookie exists
-    let username = req.session.userName 
+    let username = req.session.userName
+    let userId = req.session.userId
 
     let accessToken = await useCases.getUserAccessTokenAsync(username)
 
@@ -27,16 +28,16 @@ module.exports.create = async (req, res) => {
 
     let mix = getMix(mixData)
 
-    let spotifyMixData = await uploadToSpotify(mix, username, accessToken)
+    let spotifyMixData = await uploadToSpotify(mix, userId, accessToken)
 
     res.render('mix', spotifyMixData)
 }
 
-async function uploadToSpotify(mix, userName, accessToken) {
+async function uploadToSpotify(mix, userId, accessToken) {
 
     let playlistData = { name : mix.name, description : "descr", public : false}
 
-    let newPlaylist = await spotifyClient.createPlaylistAsync(accessToken, userName, playlistData)
+    let newPlaylist = await spotifyClient.createPlaylistAsync(accessToken, userId, playlistData)
 
     let trackUris = mix.tracklist.map(m => m.uri);
         
@@ -46,7 +47,7 @@ async function uploadToSpotify(mix, userName, accessToken) {
         
         let page = utils.paginate(trackUris, spotifyApiLimits.maxTracksInRequest, i)
 
-        await spotifyClient.addTracksToPlaylistAsync(accessToken, newPlaylist.data.id, page)
+        await spotifyClient.addTracksToPlaylistAsync(accessToken, newPlaylist.data.id, page, (i - 1) * spotifyApiLimits.maxTracksInRequest)
     }
 
     return {

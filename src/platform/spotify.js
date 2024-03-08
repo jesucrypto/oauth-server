@@ -3,6 +3,7 @@ const httpsService = require('../common/services/http.js')
 const spotifyApiEndpoints = require('../common/constants/spotifyApiEndpoints.js')
 const grantTypes = require('../common/constants/grantTypes.js')
 const settings = require('../settings.dev.json')
+const { playlist_modify_private } = require('../common/constants/authorizationScopes.js')
 
 module.exports.getUserProfileAsync = async function(accessToken) 
 {
@@ -38,6 +39,32 @@ module.exports.getUserPlaylistsAsync = async function(accessToken)
         .authorizedGet(spotifyApiEndpoints.PLAYLISTS_ENDPOINT, accessToken)
 }
 
+module.exports.getAllUserPlaylistsAsync = async function(accessToken) 
+{
+    let {data : response} = await httpsService
+        .authorizedGet(spotifyApiEndpoints.PLAYLISTS_ENDPOINT, accessToken)
+
+    if (!response.next) {
+        return response
+    }
+
+    let next = response.next
+
+    let playlists = response.items
+
+    do {
+
+        let {data: nextResponse} = await httpsService.authorizedGet(next, accessToken)
+
+        playlists = playlists.concat(nextResponse.items)
+
+        next = nextResponse.next
+
+    } while(next)
+
+    return playlists
+}
+
 module.exports.getPlaylistTracksAsync = async function(playlistId, accessToken) 
 {
     return await httpsService
@@ -60,7 +87,7 @@ module.exports.createPlaylistAsync = async function(accessToken, userId, playlis
         )
 }
 
-module.exports.addTracksToPlaylistAsync = async function(accessToken, playlistId, trackUris) 
+module.exports.addTracksToPlaylistAsync = async function(accessToken, playlistId, trackUris, position = 0) 
 {
     return await httpsService
         .authorizedPost(
@@ -68,7 +95,7 @@ module.exports.addTracksToPlaylistAsync = async function(accessToken, playlistId
             accessToken,
             {
                 uris : trackUris,
-                position : 0 
+                position : position
             }
         )
 }
